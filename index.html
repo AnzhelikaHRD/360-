@@ -653,15 +653,22 @@ const App = (() => {
     if (!state.backendUrl) { showStep('no-url'); return; }
 
     try {
-      // Fetch configs and questions in parallel
-      const [configs, questions] = await Promise.all([
+      // Fetch configs, questions і submissions паралельно
+      const [configs, questions, submissions] = await Promise.all([
         apiGet('getConfigs'),
-        apiGet('getQuestions')
+        apiGet('getQuestions'),
+        apiGet('getSubmissions')
       ]);
-      if (configs.error)   throw new Error(configs.error);
-      if (questions.error) throw new Error(questions.error);
+      if (configs.error)     throw new Error(configs.error);
+      if (questions.error)   throw new Error(questions.error);
 
-      state.configs      = configs;
+      // Правка 1: показуємо лише активних (не complete) співробітників
+      const completedIds = new Set(
+        (Array.isArray(submissions) ? submissions : [])
+          .filter(s => s.status === 'complete')
+          .map(s => s.evaluated_id)
+      );
+      state.configs      = configs.filter(c => !completedIds.has(c.id));
       state.questionSets = questions;
 
       renderPersonGrid();
@@ -707,7 +714,7 @@ const App = (() => {
   function renderPersonGrid() {
     const grid = document.getElementById('person-grid');
     if (!state.configs.length) {
-      grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:16px 0;">Немає доступних конфігурацій. Зверніться до адміністратора.</p>';
+      grid.innerHTML = '<p style="color:var(--muted);font-size:14px;padding:16px 0;">Наразі немає активних оцінювань. Всі співробітники вже пройшли оцінювання або список порожній. Зверніться до адміністратора.</p>';
       return;
     }
     grid.innerHTML = state.configs.map(c => {

@@ -461,6 +461,38 @@
 
     /* peer count helper */
 
+    /* ── DETAIL MODAL (answer viewer) ── */
+    .detail-role-block { margin-bottom: 28px; }
+    .detail-role-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: var(--r-sm);
+      margin-bottom: 12px; font-size: 13px; font-weight: 800;
+    }
+    .detail-role-header.self    { background: rgba(88,166,255,0.08); color: #58A6FF; border: 1px solid rgba(88,166,255,0.2); }
+    .detail-role-header.manager { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(255,211,0,0.2); }
+    .detail-role-header.peer    { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-border); }
+    .detail-role-header svg { width: 14px; height: 14px; }
+    .detail-score-chip {
+      margin-left: auto; font-size: 12px; font-weight: 800;
+      padding: 3px 10px; border-radius: 99px; background: rgba(255,255,255,0.06);
+    }
+
+    .detail-q { margin-bottom: 14px; padding: 14px 16px; background: var(--surface); border-radius: var(--r-sm); border: 1px solid var(--border); }
+    .detail-q-text { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 8px; line-height: 1.5; }
+    .detail-q-answer { font-size: 14px; font-weight: 700; }
+    .detail-q-answer.open-answer { font-weight: 500; color: var(--text); font-style: italic; line-height: 1.6; font-size: 13px; }
+    .detail-q-answer.no-answer { color: var(--faint); font-weight: 500; font-size: 12px; }
+
+    .rating-visual {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .rating-bar-track { flex: 1; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .rating-bar-fill  { height: 100%; border-radius: 99px; transition: width 0.4s; }
+
+    /* ВП бейдж */
+    .badge-vp-ok  { background: var(--ok-bg);  color: var(--ok);  border: 1px solid var(--ok-border); }
+    .badge-vp-err { background: var(--err-bg); color: var(--err); border: 1px solid var(--err-border); }
+
     /* Score ring */
     .score-ring {
       width: 52px; height: 52px; flex-shrink: 0;
@@ -904,6 +936,32 @@
 </div>
 
 <!-- ══════════════════════════════════════════════
+     DETAIL MODAL — перегляд відповідей
+══════════════════════════════════════════════ -->
+<div id="detail-modal" class="modal-overlay" onclick="if(event.target===this) Admin.closeDetailModal()">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="detail-modal-title">Відповіді оцінювачів</div>
+        <div id="detail-modal-sub" style="font-size:12px;color:var(--muted);margin-top:3px;"></div>
+      </div>
+      <button class="modal-close" onclick="Admin.closeDetailModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="detail-modal-body">
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>
+        Завантаження...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
      JAVASCRIPT
 ══════════════════════════════════════════════ -->
 <script>
@@ -1295,10 +1353,15 @@ const Admin = (() => {
           ? '<span class="badge badge-ok">Завершено</span>'
           : `<span class="badge badge-warn">${d.submitted_count || 0}/${d.total_required || '?'}</span>`;
 
-        // Score: ТІЛЬКИ після complete
-        const scoreCell = d.status === 'complete' && d.avg_score !== null
-          ? `<strong style="color:var(--accent)">${d.avg_score}%</strong>`
-          : '<span class="cell-muted" title="Буде розраховано після збору всіх оцінок">—</span>';
+        // Score + ВП статус: ТІЛЬКИ після complete
+        let scoreCell = '<span class="cell-muted" title="Буде розраховано після збору всіх оцінок">—</span>';
+        let vpBadge   = '';
+        if (d.status === 'complete' && d.avg_score !== null) {
+          scoreCell = `<strong style="color:var(--accent)">${d.avg_score}%</strong>`;
+          vpBadge   = d.avg_score >= 65
+            ? '<span class="badge badge-vp-ok" style="margin-left:6px;">Пройдений ВП</span>'
+            : '<span class="badge badge-vp-err" style="margin-left:6px;">Не пройдений ВП</span>';
+        }
 
         const canArchive = d.status === 'complete';
         return `
@@ -1307,17 +1370,26 @@ const Admin = (() => {
             <td class="cell-muted">${esc(d.role) || '—'}</td>
             <td><div class="role-pills">${pills}</div></td>
             <td>${badge}</td>
-            <td>${scoreCell}</td>
+            <td><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">${scoreCell}${vpBadge}</div></td>
             <td style="text-align:right;">
-              <button class="btn btn-ghost btn-sm"
-                ${!canArchive ? 'disabled title="Доступно лише після завершення всіх оцінок"' : ''}
-                onclick="Admin.openArchiveModal('${esc(d.evaluated_id)}','${esc(d.name)}')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
-                  <line x1="10" y1="12" x2="14" y2="12"/>
-                </svg>
-                Архівувати
-              </button>
+              <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
+                <button class="btn btn-ghost btn-sm"
+                  onclick="Admin.openDetailModal('${esc(d.evaluated_id)}','${esc(d.name)}','${esc(d.role)}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  Відповіді
+                </button>
+                <button class="btn btn-ghost btn-sm"
+                  ${!canArchive ? 'disabled title="Доступно лише після завершення всіх оцінок"' : ''}
+                  onclick="Admin.openArchiveModal('${esc(d.evaluated_id)}','${esc(d.name)}')">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                    <line x1="10" y1="12" x2="14" y2="12"/>
+                  </svg>
+                  Архівувати
+                </button>
+              </div>
             </td>
           </tr>`;
       }).join('');
@@ -1419,6 +1491,116 @@ const Admin = (() => {
     renderArchiveTable(filtered);
   }
 
+  // ─── DETAIL MODAL (перегляд відповідей) ──────────────────
+
+  async function openDetailModal(id, name, role) {
+    const modal = document.getElementById('detail-modal');
+    const body  = document.getElementById('detail-modal-body');
+    document.getElementById('detail-modal-title').textContent = name;
+    document.getElementById('detail-modal-sub').textContent   = role || '';
+    body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);">
+      <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>Завантаження...</div>`;
+    modal.classList.add('open');
+
+    try {
+      const data = await apiGet(`getSubmissionDetails&id=${encodeURIComponent(id)}`);
+      if (data.error) throw new Error(data.error);
+      body.innerHTML = renderDetailBody(data);
+    } catch (err) {
+      body.innerHTML = `<div style="padding:24px;color:var(--err);">Помилка: ${esc(err.message)}</div>`;
+    }
+  }
+
+  function closeDetailModal() {
+    document.getElementById('detail-modal').classList.remove('open');
+  }
+
+  function renderDetailBody(data) {
+    const qs      = data.question_sets || {};
+    const subs    = data.submissions   || [];
+    const ROLES_ORDER = ['self', 'manager', 'peer'];
+    const ROLE_META = {
+      self:    { label: 'Самооцінка',  cls: 'self' },
+      manager: { label: 'Керівник',    cls: 'manager' },
+      peer:    { label: 'Колега',      cls: 'peer' }
+    };
+
+    // Групуємо submissions по ролі
+    const byRole = {};
+    subs.forEach(s => {
+      if (!byRole[s.role]) byRole[s.role] = [];
+      byRole[s.role].push(s);
+    });
+
+    if (!subs.length) return '<div style="padding:40px;text-align:center;color:var(--muted);">Відповідей ще немає.</div>';
+
+    let html = '';
+    ROLES_ORDER.forEach(role => {
+      const roleSubs = byRole[role];
+      if (!roleSubs || !roleSubs.length) return;
+      const meta      = ROLE_META[role] || { label: role, cls: 'peer' };
+      const questions = qs[role] || [];
+
+      roleSubs.forEach((sub, idx) => {
+        const ts = sub.timestamp
+          ? new Date(sub.timestamp).toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+          : '';
+        const subLabel = roleSubs.length > 1 ? ` — ${sub.evaluator_name}` : '';
+
+        html += `<div class="detail-role-block">
+          <div class="detail-role-header ${meta.cls}">
+            ${meta.label}${subLabel}
+            ${ts ? `<span style="font-size:10px;font-weight:500;color:inherit;opacity:0.7;margin-left:4px;">${ts}</span>` : ''}
+            ${sub.score ? `<div class="detail-score-chip">${sub.score}%</div>` : ''}
+          </div>`;
+
+        // Будуємо відповіді
+        const answersMap = {};
+        (sub.answers || []).forEach(a => { answersMap[a.qid] = a.value; });
+
+        questions.forEach((q, qi) => {
+          const val = answersMap[q.id];
+          let answerHtml = '';
+
+          if (q.type === 'rating') {
+            const num = Number(val) || 0;
+            const pct = (num / 10) * 100;
+            const color = num >= 7 ? 'var(--ok)' : num >= 4 ? 'var(--warn)' : 'var(--err)';
+            answerHtml = val !== undefined
+              ? `<div class="rating-visual">
+                  <strong style="font-size:18px;color:${color};min-width:24px;">${num}</strong>
+                  <div class="rating-bar-track">
+                    <div class="rating-bar-fill" style="width:${pct}%;background:${color};"></div>
+                  </div>
+                  <span style="font-size:11px;color:var(--muted);">/10</span>
+                </div>`
+              : '<span class="no-answer">—</span>';
+
+          } else if (q.type === 'choice') {
+            const choiceColor = val === 'Продовжити' ? 'var(--ok)' : val === 'Не продовжувати' ? 'var(--err)' : 'var(--warn)';
+            answerHtml = val
+              ? `<span style="font-weight:700;color:${choiceColor};">${esc(val)}</span>`
+              : '<span class="no-answer">Не обрано</span>';
+
+          } else if (q.type === 'open') {
+            answerHtml = val && String(val).trim()
+              ? `<div class="open-answer">"${esc(String(val).trim())}"</div>`
+              : '<span class="no-answer">Відповідь не надана</span>';
+          }
+
+          html += `<div class="detail-q">
+            <div class="detail-q-text">${qi + 1}. ${esc(q.text)}</div>
+            <div class="detail-q-answer">${answerHtml}</div>
+          </div>`;
+        });
+
+        html += `</div>`;
+      });
+    });
+
+    return html;
+  }
+
   // ─── API ──────────────────────────────────────────────────
   function requireUrl() {
     if (!state.backendUrl) throw new Error('Backend URL не налаштований. Перейдіть у Налаштування та збережіть URL.');
@@ -1459,6 +1641,7 @@ const Admin = (() => {
     saveBackendUrl, testConnection, savePin, copyShareLink,
     loadConfigs, openConfigModal, closeConfigModal, updatePeerPreview, saveConfig, deleteConfig,
     loadResults, openArchiveModal, closeArchiveModal, confirmArchive,
+    openDetailModal, closeDetailModal,
     loadArchive, filterArchive
   };
 })();
