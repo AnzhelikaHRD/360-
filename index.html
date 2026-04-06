@@ -615,6 +615,10 @@
 const App = (() => {
   const BACKEND_KEY = '360_backend_url';
 
+  // ── Fallback URL: адмін вставляє сюди після деплою ────────
+  // Якщо вставлений — форма працює у всіх без додаткових дій
+  const FALLBACK_URL = 'https://script.google.com/macros/s/AKfycbyiZjwJY1gbOuQ4m1GNJj58qjqEfP2DVYq4OPJA65er3vlAHFGg_3bX_awHFqEN41-GFQ/exec';
+
   const ROLES_UA = {
     self:    'Самооцінка',
     manager: 'Керівник',
@@ -634,7 +638,17 @@ const App = (() => {
   // ── INIT ────────────────────────────────────────────────
   async function init() {
     showStep('loading');
-    state.backendUrl = localStorage.getItem(BACKEND_KEY);
+
+    // Пріоритет джерел URL:
+    // 1. ?backend=... у посиланні (адмін ділиться посиланням з URL)
+    // 2. localStorage (раніше збережений на цьому пристрої)
+    // 3. FALLBACK_URL (захардкоджений в коді)
+    const urlParam = new URLSearchParams(window.location.search).get('backend');
+    state.backendUrl = urlParam || localStorage.getItem(BACKEND_KEY) || FALLBACK_URL || null;
+
+    // Якщо URL прийшов через query-параметр — зберігаємо в localStorage
+    // щоб при наступному відкритті без параметра теж працювало
+    if (urlParam) localStorage.setItem(BACKEND_KEY, urlParam);
 
     if (!state.backendUrl) { showStep('no-url'); return; }
 

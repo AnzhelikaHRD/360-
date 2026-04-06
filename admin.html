@@ -621,8 +621,11 @@
             Після збереження форма оцінювання автоматично почне використовувати цей URL.
           </p>
 
-          <div id="url-status-bar" style="margin-bottom:16px;"></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+            <div id="url-status-bar"></div>
+          </div>
           <div id="alert-url" class="alert"></div>
+          <div id="share-link-block" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:16px;"></div>
 
           <div class="form-row">
             <label>Web App URL</label>
@@ -928,6 +931,7 @@ const Admin = (() => {
     if (state.backendUrl) {
       document.getElementById('backend-url-input').value = state.backendUrl;
       renderUrlStatus(null); // unknown until tested
+      renderShareLink(state.backendUrl); // одразу показуємо посилання для колег
     }
   }
 
@@ -1004,8 +1008,10 @@ const Admin = (() => {
       if (res.error) throw new Error(res.error);
       showAlert(alertEl, 'ok', 'URL збережено. Тепер форма оцінювання використовуватиме це посилання.');
       renderUrlStatus(true);
+      renderShareLink(url);
     } catch (err) {
       showAlert(alertEl, 'ok', 'URL збережено локально. Перевірте з\'єднання кнопкою "Перевірити".');
+      renderShareLink(url);
       renderUrlStatus(null);
     }
   }
@@ -1041,6 +1047,47 @@ const Admin = (() => {
         <line x1="12" y1="20" x2="12.01" y2="20"/>
       </svg> Перевірити`;
     }
+  }
+
+  function renderShareLink(backendUrl) {
+    const el = document.getElementById('share-link-block');
+    if (!el) return;
+    // Будує посилання виду: form.html?backend=URL
+    // Якщо відкрито через файл (file://), береться та сама папка
+    const base = window.location.href.replace(/admin\.html.*$/, 'index.html');
+    const shareUrl = `${base}?backend=${encodeURIComponent(backendUrl)}`;
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">
+        Посилання для колег (скопіюй та надішли)
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="share-url-input" class="field" type="text" readonly
+          value="${esc(shareUrl)}"
+          style="font-size:12px;font-family:monospace;color:var(--muted);cursor:pointer;"
+          onclick="this.select()">
+        <button class="btn btn-primary" onclick="Admin.copyShareLink()" style="flex-shrink:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Копіювати
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--faint);margin-top:8px;line-height:1.6;">
+        Колега відкриває це посилання — форма одразу працює без будь-яких налаштувань.
+        Після першого відкриття URL зберігається у браузері колеги автоматично.
+      </div>`;
+  }
+
+  function copyShareLink() {
+    const input = document.getElementById('share-url-input');
+    if (!input) return;
+    navigator.clipboard.writeText(input.value).then(() => {
+      const btn = input.nextElementSibling;
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Скопійовано!`;
+      setTimeout(() => { btn.innerHTML = orig; }, 2000);
+    });
   }
 
   function renderUrlStatus(ok) {
@@ -1409,7 +1456,7 @@ const Admin = (() => {
 
   return {
     login, logout, switchTab,
-    saveBackendUrl, testConnection, savePin,
+    saveBackendUrl, testConnection, savePin, copyShareLink,
     loadConfigs, openConfigModal, closeConfigModal, updatePeerPreview, saveConfig, deleteConfig,
     loadResults, openArchiveModal, closeArchiveModal, confirmArchive,
     loadArchive, filterArchive
