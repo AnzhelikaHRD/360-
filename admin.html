@@ -1,623 +1,1428 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KEVIN · HR Admin · 360°</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0f0f13;
-  --surface:#17171e;
-  --surface2:#1e1e28;
-  --surface3:#242432;
-  --border:#2a2a38;
-  --border2:#333344;
-  --accent:#FFD300;
-  --accent-dim:rgba(255,211,0,0.1);
-  --accent-glow:rgba(255,211,0,0.22);
-  --text:#e8e6f0;
-  --text2:#9896aa;
-  --text3:#5c5a70;
-  --green:#2ecc8e;
-  --green-bg:rgba(46,204,142,0.1);
-  --red:#ff5572;
-  --red-bg:rgba(255,85,114,0.1);
-  --amber:#f5a623;
-  --amber-bg:rgba(245,166,35,0.1);
-  --blue:#5b8dee;
-  --r:12px;
-  --shadow:0 4px 24px rgba(0,0,0,0.45);
-}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin · Оцінювання 360°</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* PIN SCREEN */
-#pin-screen{
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  z-index:200;
-}
-.pin-box{
-  background:var(--surface);border:1px solid var(--border2);
-  border-radius:18px;padding:40px 36px;width:340px;text-align:center;
-  box-shadow:var(--shadow);
-}
-.pin-icon{font-size:48px;margin-bottom:16px;display:block}
-.pin-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:4px}
-.pin-sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+    :root {
+      --bg:           #070A0F;
+      --surface:      #0D1117;
+      --card:         #161B22;
+      --card-h:       #1C2230;
+      --border:       #21262D;
+      --border-light: #2D333B;
+      --accent:       #FFD300;
+      --accent-dim:   rgba(255,211,0,0.08);
+      --accent-mid:   rgba(255,211,0,0.15);
+      --accent-glow:  0 0 24px rgba(255,211,0,0.18);
+      --text:         #E6EDF3;
+      --muted:        #8B949E;
+      --faint:        #484F58;
+      --err:          #F85149;
+      --err-bg:       rgba(248,81,73,0.08);
+      --err-border:   rgba(248,81,73,0.25);
+      --ok:           #3FB950;
+      --ok-bg:        rgba(63,185,80,0.08);
+      --ok-border:    rgba(63,185,80,0.25);
+      --warn:         #D29922;
+      --warn-bg:      rgba(210,153,34,0.08);
+      --info:         #58A6FF;
+      --info-bg:      rgba(88,166,255,0.08);
+      --sidebar-w:    240px;
+      --topbar-h:     60px;
+      --r:            12px;
+      --r-sm:         8px;
+      --r-xs:         6px;
+      --t:            0.2s cubic-bezier(0.4,0,0.2,1);
+      --shadow:       0 8px 32px rgba(0,0,0,0.5);
+      --shadow-sm:    0 2px 8px rgba(0,0,0,0.3);
+    }
 
-/* TOPBAR */
-.topbar{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:14px 24px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:50;
-}
-.topbar-left{display:flex;align-items:center;gap:14px}
-.logo-ring{width:38px;height:38px;border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.logo-name{font-size:15px;font-weight:800;color:var(--text)}
-.logo-name span{color:var(--accent)}
-.logo-sub{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:0.1em;text-transform:uppercase}
-.admin-badge{background:var(--accent);color:#0f0f13;font-size:10px;font-weight:800;padding:4px 12px;border-radius:20px;letter-spacing:0.08em}
+    html, body { height: 100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px;
+      overflow: hidden;
+    }
 
-/* SHELL */
-.shell{max-width:800px;margin:0 auto;padding:24px 16px 80px}
+    /* ─────────────────────────────────────────────
+       LOGIN SCREEN
+    ───────────────────────────────────────────── */
+    #login-screen {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .login-logo {
+      width: 64px; height: 64px;
+      background: var(--accent);
+      border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .login-logo svg { width: 32px; height: 32px; }
+    .login-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .login-sub   { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
 
-/* TABS */
-.tabs{
-  display:flex;gap:0;background:var(--surface);
-  border-radius:var(--r);overflow:hidden;margin-bottom:24px;
-  box-shadow:var(--shadow);border:1px solid var(--border);
-}
-.tab{
-  flex:1;padding:13px 8px;border:none;background:transparent;
-  color:var(--text2);cursor:pointer;
-  font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;
-  transition:all .2s;border-right:1px solid var(--border);
-  letter-spacing:0.03em;
-}
-.tab:last-child{border-right:none}
-.tab.active{background:var(--accent);color:#0f0f13}
-.tab:hover:not(.active){background:var(--accent-dim);color:var(--accent)}
+    .pin-row {
+      display: flex; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pin-row input {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 14px 18px;
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 22px; font-weight: 700;
+      letter-spacing: 8px;
+      text-align: center;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+    .pin-row input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(255,211,0,0.12);
+    }
+    #login-error {
+      color: var(--err); font-size: 12px; font-weight: 600;
+      min-height: 18px; margin-bottom: 12px;
+    }
 
-/* CARD */
-.card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r);padding:24px;margin-bottom:16px;
-  box-shadow:var(--shadow);
-}
-.card-title{
-  font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;
-  color:var(--accent);margin-bottom:16px;
-  display:flex;align-items:center;gap:10px;
-}
-.card-title::after{content:'';flex:1;height:1px;background:var(--border2)}
+    /* ─────────────────────────────────────────────
+       LAYOUT
+    ───────────────────────────────────────────── */
+    #app-shell { display: flex; height: 100vh; }
 
-/* FORM FIELDS */
-.question{margin-bottom:16px}
-.question:last-child{margin-bottom:0}
-.q-label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text)}
-.q-hint{font-size:11px;color:var(--text3);margin-top:-3px;margin-bottom:7px}
-select,input[type=text],input[type=number],input[type=email],input[type=password]{
-  width:100%;background:var(--surface2);border:1.5px solid var(--border2);
-  border-radius:10px;padding:11px 14px;color:var(--text);
-  font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border .2s,box-shadow .2s;
-}
-select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239896aa' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;cursor:pointer}
-select option{background:var(--surface2)}
-::placeholder{color:var(--text3)}
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-mark svg { width: 18px; height: 18px; }
+    .brand-text .b-title { font-size: 13px; font-weight: 800; }
+    .brand-text .b-sub   { font-size: 10px; color: var(--muted); font-weight: 500; margin-top: 2px; }
 
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 100px;gap:12px;align-items:end}
+    .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+    .nav-section-label {
+      font-size: 9px; font-weight: 800; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--faint);
+      padding: 8px 10px 6px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      color: var(--muted);
+      font-weight: 600; font-size: 13px;
+      transition: all var(--t);
+      user-select: none;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .nav-item:hover { background: var(--card); color: var(--text); }
+    .nav-item.active {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(255,211,0,0.15);
+    }
+    .nav-item.active svg { stroke: var(--accent); }
 
-/* BUTTONS */
-.btn{
-  display:inline-flex;align-items:center;gap:8px;padding:11px 22px;
-  border-radius:10px;border:none;cursor:pointer;
-  font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;
-  letter-spacing:0.04em;transition:all .2s;
-}
-.btn-primary{background:var(--accent);color:#0f0f13}
-.btn-primary:hover{background:#ffe033;box-shadow:0 4px 18px var(--accent-glow);transform:translateY(-1px)}
-.btn-secondary{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2)}
-.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(255,85,114,0.3)}
-.btn-danger:hover{background:rgba(255,85,114,0.2)}
-.btn-sm{padding:7px 14px;font-size:11px}
-.btn-full{width:100%;justify-content:center}
+    .sidebar-footer {
+      padding: 12px 10px;
+      border-top: 1px solid var(--border);
+    }
+    .logout-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      color: var(--muted); font-weight: 600; font-size: 13px;
+      transition: all var(--t);
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .logout-btn:hover { background: var(--err-bg); color: var(--err); }
+    .logout-btn svg { width: 16px; height: 16px; }
 
-/* DIVIDER */
-.divider{height:1px;background:var(--border);margin:16px 0}
+    /* MAIN */
+    .main-area {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px; gap: 16px;
+      flex-shrink: 0;
+    }
+    .topbar-title { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+    .topbar-sub   { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: auto; }
 
-/* ALERTS */
-.alert{padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:14px;font-weight:500;line-height:1.5}
-.alert-info{background:rgba(91,141,238,0.1);border:1px solid rgba(91,141,238,0.3);color:var(--blue)}
-.alert-warn{background:var(--amber-bg);border:1px solid rgba(245,166,35,0.3);color:var(--amber)}
-.alert-success{background:var(--green-bg);border:1px solid rgba(46,204,142,0.3);color:var(--green)}
-.alert-err{background:var(--red-bg);border:1px solid rgba(255,85,114,0.3);color:var(--red)}
+    .content-area {
+      flex: 1; overflow-y: auto; padding: 28px;
+    }
 
-/* PENDING CARD */
-.pending-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r);padding:20px;margin-bottom:12px;
-  box-shadow:var(--shadow);transition:border-color .2s;
-}
-.pending-card:hover{border-color:var(--border2)}
-.pending-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.pending-name{font-size:15px;font-weight:800;color:var(--text)}
-.pending-pos{font-size:11px;color:var(--text3);margin-top:3px}
-.progress-track{height:5px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:12px}
-.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .5s}
-.progress-fill.complete{background:var(--green)}
-.role-tags{display:flex;gap:6px;flex-wrap:wrap}
-.role-tag{font-size:11px;padding:4px 11px;border-radius:20px;font-weight:600}
-.tag-done{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,204,142,0.2)}
-.tag-wait{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+    /* ─────────────────────────────────────────────
+       TABS (content panels)
+    ───────────────────────────────────────────── */
+    .tab-panel { display: none; }
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.22s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
-/* ARCHIVE CARD */
-.arch-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r);padding:20px;margin-bottom:12px;
-  box-shadow:var(--shadow);
-}
-.arch-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.arch-name{font-size:15px;font-weight:800;color:var(--text)}
-.arch-pos{font-size:11px;color:var(--text3);margin-top:3px}
-.arch-score{font-size:26px;font-weight:800;text-align:right;line-height:1}
-.arch-pass{color:var(--green)}.arch-fail{color:var(--red)}.arch-warn{color:var(--amber)}
-.arch-verdict{font-size:11px;text-align:right;margin-top:4px;font-weight:700}
-.blocks-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.block-pill{
-  font-size:11px;padding:5px 12px;border-radius:20px;
-  background:var(--surface2);border:1px solid var(--border2);
-  color:var(--text2);font-weight:600;
-}
+    /* ─────────────────────────────────────────────
+       COMMON COMPONENTS
+    ───────────────────────────────────────────── */
 
-/* EMPTY STATE */
-.empty{text-align:center;padding:48px;color:var(--text3);font-size:13px}
-.empty-icon{font-size:40px;margin-bottom:12px;display:block}
+    /* Section header */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-head h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+    .section-head p  { color: var(--muted); font-size: 13px; margin-top: 3px; }
 
-/* SETTINGS */
-.settings-hint{font-size:12px;color:var(--text3);margin-top:7px;line-height:1.7}
-ol.inst{font-size:12px;color:var(--text2);line-height:2.4;padding-left:18px}
-ol.inst li strong{color:var(--accent)}
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px;
+    }
+    .card + .card { margin-top: 16px; }
+    .card-title {
+      font-size: 13px; font-weight: 800; letter-spacing: 0.3px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 16px;
+    }
 
-/* LOADING */
-.spinner{width:32px;height:32px;margin:0 auto 14px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-state{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+    }
+    .stat-num  { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+    .stat-card.accent { border-color: rgba(255,211,0,0.25); background: var(--accent-dim); }
+    .stat-card.accent .stat-num { color: var(--accent); }
+    .stat-card.green  { border-color: var(--ok-border); background: var(--ok-bg); }
+    .stat-card.green  .stat-num { color: var(--ok); }
+    .stat-card.red    { border-color: var(--err-border); background: var(--err-bg); }
+    .stat-card.red    .stat-num { color: var(--err); }
 
-/* TAB HEADER */
-.tab-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.tab-header-title{font-size:13px;font-weight:700;color:var(--text2)}
-</style>
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 16px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background var(--t);
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--card-h); }
+    tbody td {
+      padding: 14px 16px;
+      font-size: 13px; font-weight: 500;
+      vertical-align: middle;
+    }
+    .cell-muted { color: var(--muted); }
+    .cell-mono  { font-family: monospace; font-size: 12px; color: var(--muted); }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 99px;
+      font-size: 11px; font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge-ok   { background: var(--ok-bg);   color: var(--ok);   border: 1px solid var(--ok-border); }
+    .badge-warn { background: var(--warn-bg);  color: var(--warn); border: 1px solid rgba(210,153,34,0.25); }
+    .badge-err  { background: var(--err-bg);   color: var(--err);  border: 1px solid var(--err-border); }
+    .badge-info { background: var(--info-bg);  color: var(--info); border: 1px solid rgba(88,166,255,0.2); }
+
+    /* Progress pills */
+    .role-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+    .role-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 8px; border-radius: 99px;
+      font-size: 10px; font-weight: 700;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .role-pill.done  { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-border); }
+    .role-pill .dot  { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px; font-weight: 700;
+      padding: 10px 18px;
+      border-radius: var(--r-sm);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all var(--t);
+      outline: none;
+      white-space: nowrap;
+    }
+    .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary {
+      background: var(--accent); color: #0a0c10; border-color: var(--accent);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #ffe033; box-shadow: var(--accent-glow); transform: translateY(-1px);
+    }
+    .btn-ghost {
+      background: transparent; color: var(--muted); border-color: var(--border);
+    }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--muted); color: var(--text); }
+    .btn-danger {
+      background: transparent; color: var(--err); border-color: var(--err-border);
+    }
+    .btn-danger:hover:not(:disabled) { background: var(--err-bg); }
+    .btn-sm { padding: 7px 12px; font-size: 12px; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+
+    /* Form controls */
+    .form-row { margin-bottom: 18px; }
+    .form-row label {
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .field {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 14px; font-weight: 500;
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+    .field::placeholder { color: var(--faint); }
+    .field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,211,0,0.1); }
+    .field-row { display: flex; gap: 10px; }
+    .field-row .field { flex: 1; }
+
+    /* Alerts */
+    .alert {
+      border-radius: var(--r-sm); padding: 11px 14px;
+      font-size: 13px; font-weight: 600; margin-bottom: 14px;
+      display: none;
+    }
+    .alert.show-ok  { display: block; background: var(--ok-bg);   color: var(--ok);  border: 1px solid var(--ok-border); }
+    .alert.show-err { display: block; background: var(--err-bg);  color: var(--err); border: 1px solid var(--err-border); }
+    .alert.show-info{ display: block; background: var(--info-bg); color: var(--info);border: 1px solid rgba(88,166,255,0.2); }
+
+    /* Divider */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 2px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Empty state */
+    .empty {
+      text-align: center; padding: 52px 20px; color: var(--muted); font-size: 14px;
+    }
+
+    /* Search bar */
+    .search-bar {
+      position: relative; max-width: 320px;
+    }
+    .search-bar svg {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 14px; height: 14px; stroke: var(--muted); pointer-events: none;
+    }
+    .search-bar input {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 9px 12px 9px 36px;
+      color: var(--text);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px; font-weight: 500;
+      outline: none;
+      transition: border-color var(--t);
+    }
+    .search-bar input::placeholder { color: var(--faint); }
+    .search-bar input:focus { border-color: var(--accent); }
+
+    /* ─────────────────────────────────────────────
+       MODAL
+    ───────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500; padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity var(--t);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%; max-width: 620px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow);
+      transform: translateY(10px);
+      transition: transform var(--t);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+    .modal-close {
+      width: 32px; height: 32px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-xs); cursor: pointer; color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--t);
+    }
+    .modal-close:hover { color: var(--text); border-color: var(--muted); }
+    .modal-close svg { width: 14px; height: 14px; }
+    .modal-footer {
+      display: flex; justify-content: flex-end; gap: 10px;
+      margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);
+    }
+
+    /* peer count helper */
+
+    /* Score ring */
+    .score-ring {
+      width: 52px; height: 52px; flex-shrink: 0;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) 0%, var(--border) 0%);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .score-ring::before {
+      content: '';
+      position: absolute; inset: 5px;
+      background: var(--card); border-radius: 50%;
+    }
+    .score-ring span {
+      position: relative; z-index: 1;
+      font-size: 12px; font-weight: 800; color: var(--accent);
+    }
+
+    /* URL status indicator */
+    .url-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; padding: 4px 10px;
+      border-radius: 99px;
+    }
+    .url-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .url-status.connected { color: var(--ok); background: var(--ok-bg); }
+    .url-status.connected .dot { background: var(--ok); }
+    .url-status.disconnected { color: var(--muted); background: var(--card); }
+    .url-status.disconnected .dot { background: var(--faint); }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      :root { --sidebar-w: 56px; }
+      .nav-item span, .brand-text, .logout-btn span { display: none; }
+      .nav-item { justify-content: center; padding: 10px; }
+      .sidebar-brand { justify-content: center; padding: 14px 10px; }
+      .content-area { padding: 16px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ── PIN SCREEN ──────────────────────────────────────────── -->
-<div id="pin-screen">
-  <div class="pin-box">
-    <span class="pin-icon">🔐</span>
-    <div class="pin-title">HR Admin · KEVIN</div>
-    <div class="pin-sub">Введіть PIN для доступу до панелі</div>
-    <input type="password" id="pin-input" placeholder="PIN-код"
-      style="text-align:center;letter-spacing:0.25em;font-size:20px;margin-bottom:12px"
-      onkeydown="if(event.key==='Enter')checkPin()">
-    <div id="pin-err" class="alert alert-err" style="display:none;margin-bottom:12px">Невірний PIN</div>
-    <button class="btn btn-primary btn-full" onclick="checkPin()">Увійти →</button>
-    <div style="font-size:11px;color:var(--text3);margin-top:16px">PIN змінюється у вкладці ⚙️ Налаштування</div>
+<!-- ══════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#0a0c10" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <div class="login-title">Admin Panel</div>
+    <div class="login-sub">Введіть PIN-код для доступу до панелі управління</div>
+    <div class="pin-row">
+      <input type="password" id="pin-input" maxlength="10" placeholder="••••"
+             onkeydown="if(event.key==='Enter') Admin.login()">
+    </div>
+    <div id="login-error"></div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;" onclick="Admin.login()">
+      Увійти
+    </button>
+    <p style="margin-top:16px;font-size:11px;color:var(--faint);">Стандартний PIN: 1234</p>
   </div>
 </div>
 
-<!-- ── MAIN APP ────────────────────────────────────────────── -->
-<div id="main-app" style="display:none">
-<div class="topbar">
-  <div class="topbar-left">
-    <div class="logo-ring">🚀</div>
-    <div>
-      <div class="logo-name"><span>KEVIN</span> · HR Admin</div>
-      <div class="logo-sub">360° Панель управління</div>
+<!-- ══════════════════════════════════════════════
+     APP SHELL
+══════════════════════════════════════════════ -->
+<div id="app-shell" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0a0c10" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="12" cy="8" r="3"/>
+          <circle cx="5" cy="18" r="2.5"/>
+          <circle cx="19" cy="18" r="2.5"/>
+          <line x1="12" y1="11" x2="5" y2="15.5"/>
+          <line x1="12" y1="11" x2="19" y2="15.5"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="b-title">360° Admin</div>
+        <div class="b-sub">Performance System</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Меню</div>
+      <button class="nav-item active" data-tab="settings" onclick="Admin.switchTab('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Налаштування</span>
+      </button>
+      <button class="nav-item" data-tab="configs" onclick="Admin.switchTab('configs')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>Конфігурації</span>
+      </button>
+      <button class="nav-item" data-tab="results" onclick="Admin.switchTab('results')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6"  y1="20" x2="6"  y2="14"/>
+        </svg>
+        <span>Результати</span>
+      </button>
+      <button class="nav-item" data-tab="archive" onclick="Admin.switchTab('archive')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="21 8 21 21 3 21 3 8"/>
+          <rect x="1" y="3" width="22" height="5"/>
+          <line x1="10" y1="12" x2="14" y2="12"/>
+        </svg>
+        <span>Архів</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="Admin.logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Вийти</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN AREA -->
+  <div class="main-area">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Налаштування</div>
+      </div>
+      <span class="topbar-sub" id="topbar-date"></span>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ═══ TAB: SETTINGS ═══ -->
+      <div id="tab-settings" class="tab-panel active">
+
+        <!-- Backend URL block -->
+        <div class="card">
+          <div class="card-title">Backend URL (Apps Script Web App)</div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.6;">
+            Вставте посилання на ваш розгорнутий Google Apps Script Web App.
+            Після збереження форма оцінювання автоматично почне використовувати цей URL.
+          </p>
+
+          <div id="url-status-bar" style="margin-bottom:16px;"></div>
+          <div id="alert-url" class="alert"></div>
+
+          <div class="form-row">
+            <label>Web App URL</label>
+            <div class="field-row">
+              <input id="backend-url-input" class="field"
+                     type="url" placeholder="https://script.google.com/macros/s/.../exec"
+                     onkeydown="if(event.key==='Enter') Admin.saveBackendUrl()">
+              <button class="btn btn-ghost" onclick="Admin.testConnection()" id="btn-test" title="Перевірити з'єднання">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M1 6s0 0 0 0a15.3 15.3 0 0 1 22 0"/>
+                  <path d="M5 10s0 0 0 0a10.2 10.2 0 0 1 14 0"/>
+                  <path d="M8.5 14s0 0 0 0a5.1 5.1 0 0 1 7 0"/>
+                  <line x1="12" y1="20" x2="12.01" y2="20"/>
+                </svg>
+                Перевірити
+              </button>
+              <button class="btn btn-primary" onclick="Admin.saveBackendUrl()">Зберегти</button>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- PIN block -->
+        <div class="card">
+          <div class="card-title">PIN-код адміністратора</div>
+          <p style="color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.6;">
+            PIN використовується для доступу до адмінпанелі. Мінімум 4 символи.
+          </p>
+          <div id="alert-pin" class="alert"></div>
+          <div class="form-row">
+            <label>Новий PIN</label>
+            <div class="field-row" style="max-width:320px;">
+              <input id="new-pin" class="field" type="password" maxlength="20" placeholder="Мінімум 4 символи"
+                     onkeydown="if(event.key==='Enter') Admin.savePin()">
+              <button class="btn btn-primary" onclick="Admin.savePin()">Зберегти PIN</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /settings -->
+
+      <!-- ═══ TAB: CONFIGS ═══ -->
+      <div id="tab-configs" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Конфігурації</h2>
+            <p>Налаштуйте список осіб для оцінювання (питання зашиті в систему)</p>
+          </div>
+          <button class="btn btn-primary" onclick="Admin.openConfigModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Додати особу
+          </button>
+        </div>
+        <div id="alert-configs" class="alert"></div>
+        <div class="card" style="padding:0;">
+          <div id="configs-loading" style="padding:32px;text-align:center;color:var(--muted);">
+            <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>
+            <div>Завантаження...</div>
+          </div>
+          <div id="configs-table" style="display:none;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ім'я</th>
+                    <th>Посада</th>
+                    <th>Колег (N)</th>
+                    <th>Всього оцінок</th>
+                    <th style="text-align:right;">Дії</th>
+                  </tr>
+                </thead>
+                <tbody id="configs-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="configs-empty" class="empty" style="display:none;">
+            Конфігурацій ще немає. Додайте першу особу.
+          </div>
+        </div>
+      </div><!-- /configs -->
+
+      <!-- ═══ TAB: RESULTS ═══ -->
+      <div id="tab-results" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Результати</h2>
+            <p>Прогрес оцінювань та підсумкові бали</p>
+          </div>
+          <button class="btn btn-ghost" onclick="Admin.loadResults()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Оновити
+          </button>
+        </div>
+
+        <div id="results-stats" class="stats-row"></div>
+        <div id="alert-results" class="alert"></div>
+
+        <div class="card" style="padding:0;">
+          <div id="results-loading" style="padding:32px;text-align:center;color:var(--muted);display:none;">
+            <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>
+            <div>Завантаження...</div>
+          </div>
+          <div id="results-table" style="display:none;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Співробітник</th>
+                    <th>Посада</th>
+                    <th>Прогрес</th>
+                    <th>Статус</th>
+                    <th>Сер. бал</th>
+                    <th style="text-align:right;">Дії</th>
+                  </tr>
+                </thead>
+                <tbody id="results-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="results-empty" class="empty" style="display:none;">
+            Результатів ще немає. Перевірте наявність конфігурацій та відповідей.
+          </div>
+        </div>
+      </div><!-- /results -->
+
+      <!-- ═══ TAB: ARCHIVE ═══ -->
+      <div id="tab-archive" class="tab-panel">
+        <div class="section-head">
+          <div>
+            <h2>Архів</h2>
+            <p>Завершені цикли оцінювань</p>
+          </div>
+          <button class="btn btn-ghost" onclick="Admin.loadArchive()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+            Оновити
+          </button>
+        </div>
+
+        <div style="margin-bottom:18px;">
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="archive-search" placeholder="Пошук за ім'ям або роллю..."
+                   oninput="Admin.filterArchive()">
+          </div>
+        </div>
+
+        <div id="alert-archive" class="alert"></div>
+        <div class="card" style="padding:0;">
+          <div id="archive-loading" style="padding:32px;text-align:center;color:var(--muted);">
+            <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>
+            <div>Завантаження...</div>
+          </div>
+          <div id="archive-table" style="display:none;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Дата</th>
+                    <th>Оцінюваний</th>
+                    <th>Оцінювач</th>
+                    <th>Роль оцінювача</th>
+                    <th>Бал</th>
+                  </tr>
+                </thead>
+                <tbody id="archive-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div id="archive-empty" class="empty" style="display:none;">Архів порожній.</div>
+        </div>
+      </div><!-- /archive -->
+
+    </div><!-- /content-area -->
+  </div><!-- /main-area -->
+</div><!-- /app-shell -->
+
+<!-- ══════════════════════════════════════════════
+     CONFIG MODAL
+══════════════════════════════════════════════ -->
+<div id="config-modal" class="modal-overlay" onclick="if(event.target===this) Admin.closeConfigModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Додати особу</div>
+      <button class="modal-close" onclick="Admin.closeConfigModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <input type="hidden" id="modal-config-id">
+
+    <div class="form-row">
+      <label>ПІБ *</label>
+      <input id="cfg-name" class="field" type="text" placeholder="Прізвище Ім'я По батькові">
+    </div>
+    <div class="form-row">
+      <label>Посада / Роль в організації</label>
+      <input id="cfg-role" class="field" type="text" placeholder="Наприклад: Senior Developer, Team Lead...">
+    </div>
+
+    <hr class="divider" style="margin:20px 0;">
+
+    <div class="form-row">
+      <label>Кількість колег для оцінювання *</label>
+      <input id="cfg-peer-count" class="field" type="number" min="1" max="20" value="2"
+             style="max-width:160px;"
+             placeholder="Наприклад: 2"
+             oninput="Admin.updatePeerPreview()">
+      <div style="margin-top:8px;font-size:12px;color:var(--muted);line-height:1.6;">
+        <strong style="color:var(--text);">Формула:</strong> разом потрібно
+        <span id="modal-total-preview" style="color:var(--accent);font-weight:700;">4</span> оцінки
+        — самооцінка + керівник +
+        <span id="modal-peer-preview" style="color:var(--accent);font-weight:700;">2</span> колеги.
+        Статус <em>complete</em> виставляється після збору всіх оцінок.
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px 16px;margin-top:4px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Питання в системі (hardcoded)</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <span class="badge badge-info">Самооцінка: 5 питань</span>
+        <span class="badge badge-info">Керівник: 9 питань</span>
+        <span class="badge badge-info">Колега: 5 питань</span>
+      </div>
+      <div style="font-size:11px;color:var(--faint);margin-top:8px;">
+        Питання, ваги та типи (рейтинг / вибір / відповідь) зашиті у Code.gs → QUESTION_SETS
+      </div>
+    </div>
+
+    <div id="alert-modal" class="alert" style="margin-top:14px;"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Admin.closeConfigModal()">Скасувати</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="Admin.saveConfig()">Зберегти</button>
     </div>
   </div>
-  <span class="admin-badge">HR</span>
 </div>
 
-<div class="shell">
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('pending')">⏳ Очікування</button>
-    <button class="tab" onclick="showTab('archive')">📁 Архів</button>
-    <button class="tab" onclick="showTab('settings')">⚙️ Налаштування</button>
-  </div>
-
-  <!-- ── TAB: PENDING ──────────────────────────────────────── -->
-  <div id="tab-pending">
-    <div class="card">
-      <div class="card-title">➕ Нова картка співробітника</div>
-      <div class="two-col">
-        <div class="question">
-          <label class="q-label">Ім'я та прізвище</label>
-          <input type="text" id="cfg-name" placeholder="Марія Коваль">
-        </div>
-        <div class="question">
-          <label class="q-label">Посада</label>
-          <input type="text" id="cfg-position" placeholder="Presale менеджер">
-        </div>
-      </div>
-      <div class="question" style="margin-bottom:0">
-        <label class="q-label">Кількість колег-оцінювачів</label>
-        <div class="q-hint">Керівник (1) і самооцінка (1) додаються автоматично</div>
-        <input type="number" id="cfg-peers" min="0" max="7" value="2" style="width:140px">
-      </div>
-      <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
-        <button class="btn btn-primary" id="btn-create" onclick="createConfig()">Створити картку →</button>
-        <span id="create-msg" style="font-size:12px;color:var(--green);opacity:0;transition:opacity .3s"></span>
-      </div>
+<!-- ══════════════════════════════════════════════
+     ARCHIVE CONFIRM MODAL
+══════════════════════════════════════════════ -->
+<div id="archive-modal" class="modal-overlay" onclick="if(event.target===this) Admin.closeArchiveModal()">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Архівувати результати</div>
+      <button class="modal-close" onclick="Admin.closeArchiveModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>
-
-    <div class="tab-header">
-      <span class="tab-header-title">Активні оцінювання</span>
-      <button class="btn btn-secondary btn-sm" onclick="loadPending()">🔄 Оновити</button>
-    </div>
-    <div id="pending-list"></div>
-  </div>
-
-  <!-- ── TAB: ARCHIVE ──────────────────────────────────────── -->
-  <div id="tab-archive" style="display:none">
-    <div class="tab-header">
-      <span class="tab-header-title">Завершені оцінювання</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-secondary btn-sm" onclick="loadArchive()">🔄 Оновити</button>
-        <button class="btn btn-danger btn-sm" onclick="clearArchive()">🗑 Очистити</button>
-      </div>
-    </div>
-    <div id="archive-list"></div>
-  </div>
-
-  <!-- ── TAB: SETTINGS ─────────────────────────────────────── -->
-  <div id="tab-settings" style="display:none">
-    <div class="card">
-      <div class="card-title">🔐 Зміна PIN-коду</div>
-      <div class="two-col">
-        <div class="question">
-          <label class="q-label">Новий PIN</label>
-          <input type="password" id="new-pin" placeholder="мінімум 4 символи">
-        </div>
-        <div class="question">
-          <label class="q-label">Підтвердження</label>
-          <input type="password" id="new-pin2" placeholder="повторіть PIN">
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <button class="btn btn-primary btn-sm" onclick="changePin()">Зберегти PIN</button>
-        <span id="pin-save-msg" style="font-size:12px;color:var(--green);opacity:0;transition:opacity .3s"></span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔗 Підключення Apps Script</div>
-      <div class="question">
-        <label class="q-label">URL Google Apps Script</label>
-        <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/..." oninput="saveScriptUrl()">
-        <div class="settings-hint">
-          Вставте сюди URL задеплоєного веб-застосунку Apps Script.<br>
-          Це значення зберігається локально у вашому браузері для зручності.
-        </div>
-      </div>
-      <div class="divider"></div>
-
-      <div class="card-title" style="margin-bottom:12px">📋 Інструкція налаштування</div>
-      <ol class="inst">
-        <li>Відкрийте Google Sheets → Розширення → <strong>Apps Script</strong></li>
-        <li>Замінить вміст на скопійований код нижче → збережіть</li>
-        <li><strong>Розгортання → Нове розгортання → Веб-застосунок</strong></li>
-        <li>Виконувати як: <strong>Я</strong> · Доступ: <strong>Усі (навіть анонімні)</strong></li>
-        <li>Натисніть <strong>Розгорнути</strong> → скопіюйте URL</li>
-        <li>Вставте URL вище, а також у константу <strong>SCRIPT_URL</strong> у form.html та admin.html</li>
-      </ol>
-      <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
-        <button class="btn btn-secondary btn-sm" onclick="copyScript()">📋 Скопіювати Code.gs</button>
-        <span id="copy-confirm" style="font-size:12px;color:var(--green);opacity:0;transition:opacity .3s"></span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🚀 GitHub Pages</div>
-      <ol class="inst">
-        <li>Створіть репозиторій на GitHub</li>
-        <li>Завантажте <strong>form.html</strong> та <strong>admin.html</strong> в корінь репо</li>
-        <li>Settings → Pages → Branch: <strong>main</strong> → Save</li>
-        <li>Посилання на форму: <strong>https://username.github.io/repo/form.html</strong></li>
-        <li>Посилання на адмінку: <strong>https://username.github.io/repo/admin.html</strong></li>
-      </ol>
+    <p style="color:var(--muted);font-size:14px;line-height:1.6;">
+      Всі відповіді для <strong id="archive-person-name" style="color:var(--text);"></strong>
+      будуть переміщені до Архіву. Цю дію не можна скасувати.
+    </p>
+    <div id="alert-archive-modal" class="alert" style="margin-top:14px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="Admin.closeArchiveModal()">Скасувати</button>
+      <button class="btn btn-danger" id="archive-confirm-btn" onclick="Admin.confirmArchive()">
+        Архівувати
+      </button>
     </div>
   </div>
+</div>
 
-</div><!-- /shell -->
-</div><!-- /main-app -->
-
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
 <script>
-// ── CONFIG ────────────────────────────────────────────────────
-// TODO: замінити на URL задеплоєного Apps Script
-var SCRIPT_URL = localStorage.getItem('kevin360_script_url') || 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
-var THRESHOLD  = 2.8;
+const Admin = (() => {
+  const BACKEND_KEY  = '360_backend_url';
+  const ROLES_UA     = { self: 'Самооцінка', manager: 'Керівник', peer: 'Колеги' };
+  const TAB_TITLES   = { settings: 'Налаштування', configs: 'Конфігурації', results: 'Результати', archive: 'Архів' };
 
-// ── PIN ───────────────────────────────────────────────────────
-function checkPin() {
-  var pin = document.getElementById('pin-input').value;
-  if (!pin) { alert('Введіть PIN'); return; }
-
-  apiPost({ action: 'checkPin', pin: pin })
-    .then(function(res) {
-      if (res.valid) {
-        document.getElementById('pin-screen').style.display = 'none';
-        document.getElementById('main-app').style.display   = 'block';
-        loadScriptUrl();
-        loadPending();
-      } else {
-        document.getElementById('pin-err').style.display = 'block';
-        document.getElementById('pin-input').value = '';
-      }
-    })
-    .catch(function() {
-      // Fallback: allow default PIN offline
-      var stored = localStorage.getItem('kevin360_pin') || '1234';
-      if (pin === stored) {
-        document.getElementById('pin-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        loadScriptUrl();
-        loadPending();
-      } else {
-        document.getElementById('pin-err').style.display = 'block';
-        document.getElementById('pin-input').value = '';
-      }
-    });
-}
-document.getElementById('pin-input').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') checkPin();
-});
-
-function changePin() {
-  var p1 = document.getElementById('new-pin').value;
-  var p2 = document.getElementById('new-pin2').value;
-  if (p1.length < 4) { alert('Мінімум 4 символи'); return; }
-  if (p1 !== p2)     { alert('PIN не співпадає'); return; }
-
-  apiPost({ action: 'setPin', pin: p1 }).then(function(res) {
-    if (res.status === 'ok') {
-      localStorage.setItem('kevin360_pin', p1);
-      flash('pin-save-msg', '✓ PIN збережено');
-      document.getElementById('new-pin').value = '';
-      document.getElementById('new-pin2').value = '';
-    }
-  }).catch(function() {
-    localStorage.setItem('kevin360_pin', p1);
-    flash('pin-save-msg', '✓ PIN збережено локально');
-  });
-}
-
-// ── TABS ──────────────────────────────────────────────────────
-function showTab(t) {
-  ['pending','archive','settings'].forEach(function(x) {
-    document.getElementById('tab-' + x).style.display = x === t ? 'block' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach(function(b, i) {
-    b.classList.toggle('active', ['pending','archive','settings'][i] === t);
-  });
-  if (t === 'pending') loadPending();
-  if (t === 'archive') loadArchive();
-}
-
-// ── PENDING ───────────────────────────────────────────────────
-function createConfig() {
-  var name     = document.getElementById('cfg-name').value.trim();
-  var position = document.getElementById('cfg-position').value.trim();
-  var peers    = parseInt(document.getElementById('cfg-peers').value) || 2;
-  if (!name) { alert('Введіть ім\'я'); return; }
-
-  var normalized = name.split(' ').map(function(w) {
-    return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-  }).join(' ');
-
-  var btn = document.getElementById('btn-create');
-  btn.disabled = true;
-  btn.textContent = 'Збереження...';
-
-  apiPost({ action: 'createConfig', name: normalized, position: position, peers: peers })
-    .then(function(res) {
-      if (res.status === 'ok') {
-        document.getElementById('cfg-name').value = '';
-        document.getElementById('cfg-position').value = '';
-        document.getElementById('cfg-peers').value = 2;
-        flash('create-msg', '✓ Картку створено');
-        loadPending();
-      } else {
-        alert('Помилка: ' + (res.message || 'невідома'));
-      }
-    })
-    .catch(function(err) { alert('Помилка з\'єднання: ' + err); })
-    .finally(function() {
-      btn.disabled = false;
-      btn.textContent = 'Створити картку →';
-    });
-}
-
-function loadPending() {
-  var el = document.getElementById('pending-list');
-  el.innerHTML = '<div class="loading-state"><div class="spinner"></div>Завантаження...</div>';
-
-  Promise.all([
-    apiGet('getConfigs'),
-    apiGet('getSubmissions')
-  ]).then(function(results) {
-    var configs = results[0].data || [];
-    var subGroups = results[1].data || {};
-
-    // Index submissions by evaluated_id
-    var subMap = {};
-    (Array.isArray(subGroups) ? subGroups : []).forEach(function(g) {
-      subMap[String(g.evaluated_id)] = g;
-    });
-
-    if (!configs.length) {
-      el.innerHTML = '<div class="empty"><span class="empty-icon">📋</span>Немає активних оцінювань.<br>Створіть картку вище.</div>';
-      return;
-    }
-
-    el.innerHTML = configs.map(function(cfg) {
-      var group = subMap[String(cfg.id)];
-      var subs  = group ? (group.submissions || []) : [];
-      var total = cfg.total || (cfg.peers + 2);
-      var done  = subs.length;
-      var pct   = Math.min(100, Math.round((done / total) * 100));
-      var isComplete = pct >= 100;
-
-      // Build role tags
-      var hasMgr  = subs.some(function(s) { return s.role === 'manager'; });
-      var hasSelf = subs.some(function(s) { return s.role === 'self'; });
-      var peerSubs = subs.filter(function(s) { return s.role === 'peer'; });
-      var tags = [];
-      tags.push('<span class="role-tag ' + (hasMgr ? 'tag-done' : 'tag-wait') + '">' + (hasMgr ? '✓ ' : '') + 'Керівник</span>');
-      for (var i = 0; i < (cfg.peers || 2); i++) {
-        tags.push('<span class="role-tag ' + (i < peerSubs.length ? 'tag-done' : 'tag-wait') + '">' + (i < peerSubs.length ? '✓ ' : '') + 'Колега ' + (i+1) + '</span>');
-      }
-      tags.push('<span class="role-tag ' + (hasSelf ? 'tag-done' : 'tag-wait') + '">' + (hasSelf ? '✓ ' : '') + 'Самооцінка</span>');
-
-      return '<div class="pending-card">' +
-        '<div class="pending-header">' +
-          '<div><div class="pending-name">' + esc(cfg.name) + '</div>' +
-          '<div class="pending-pos">' + esc(cfg.position || '—') + ' · з ' + esc(cfg.date || '—') + '</div></div>' +
-          '<div style="display:flex;gap:8px;align-items:center">' +
-            '<span style="font-size:13px;color:var(--text2);font-weight:700">' + done + '/' + total + '</span>' +
-            '<button class="btn btn-danger btn-sm" onclick="deleteConfig(\'' + cfg.id + '\')">✕</button>' +
-          '</div>' +
-        '</div>' +
-        '<div class="progress-track"><div class="progress-fill' + (isComplete ? ' complete' : '') + '" style="width:' + pct + '%"></div></div>' +
-        '<div class="role-tags">' + tags.join('') + '</div>' +
-      '</div>';
-    }).join('');
-  }).catch(function() {
-    el.innerHTML = '<div class="empty"><span class="empty-icon">⚠️</span>Помилка завантаження.<br>Перевірте SCRIPT_URL.</div>';
-  });
-}
-
-function deleteConfig(id) {
-  if (!confirm('Видалити картку? Зібрані оцінки залишаться в таблиці.')) return;
-  apiPost({ action: 'deleteConfig', id: id })
-    .then(function() { loadPending(); })
-    .catch(function(err) { alert('Помилка: ' + err); });
-}
-
-// ── ARCHIVE ───────────────────────────────────────────────────
-function loadArchive() {
-  var el = document.getElementById('archive-list');
-  el.innerHTML = '<div class="loading-state"><div class="spinner"></div>Завантаження...</div>';
-
-  apiGet('getArchive').then(function(res) {
-    var archive = res.data || [];
-    if (!archive.length) {
-      el.innerHTML = '<div class="empty"><span class="empty-icon">📭</span>Архів порожній</div>';
-      return;
-    }
-    el.innerHTML = archive.map(function(r) {
-      var scoreClass = r.hard_fail ? 'arch-warn' : (r.pass ? 'arch-pass' : 'arch-fail');
-      var verdict    = r.hard_fail ? '⚠️ Автопровал' : (r.pass ? '✅ Пройшов ВТ' : '❌ Не пройшов');
-      return '<div class="arch-card">' +
-        '<div class="arch-header">' +
-          '<div><div class="arch-name">' + esc(r.name) + '</div>' +
-          '<div class="arch-pos">' + esc(r.position || '—') + ' · ' + esc(r.date || '—') + '</div></div>' +
-          '<div><div class="arch-score ' + scoreClass + '">' + Number(r.final_score).toFixed(2) + ' / 4.0</div>' +
-          '<div class="arch-verdict ' + scoreClass + '">' + verdict + '</div></div>' +
-        '</div>' +
-        '<div class="blocks-row">' +
-          '<span class="block-pill">Керівник: ' + (r.manager_score ? Number(r.manager_score).toFixed(2) : '—') + '</span>' +
-          '<span class="block-pill">Колеги: ' + (r.peer_score != null ? Number(r.peer_score).toFixed(2) : '—') + '</span>' +
-          '<span class="block-pill">Самооцінка: ' + (r.self_score ? Number(r.self_score).toFixed(2) : '—') + '</span>' +
-          '<span class="block-pill" style="background:' + (r.pass ? 'var(--green-bg)' : 'var(--red-bg)') + '">Поріг: ' + THRESHOLD + '</span>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-  }).catch(function() {
-    el.innerHTML = '<div class="empty"><span class="empty-icon">⚠️</span>Помилка завантаження</div>';
-  });
-}
-
-function clearArchive() {
-  if (!confirm('Очистити весь архів? Цю дію неможливо скасувати.')) return;
-  apiPost({ action: 'clearArchive' }).then(function() { loadArchive(); });
-}
-
-// ── SETTINGS ─────────────────────────────────────────────────
-function loadScriptUrl() {
-  var stored = localStorage.getItem('kevin360_script_url') || '';
-  document.getElementById('sheets-url').value = stored;
-}
-
-function saveScriptUrl() {
-  var url = document.getElementById('sheets-url').value.trim();
-  localStorage.setItem('kevin360_script_url', url);
-  SCRIPT_URL = url;
-}
-
-function copyScript() {
-  fetch('/Code.gs')
-    .then(function(r) { return r.text(); })
-    .catch(function() { return CODE_GS_CONTENT; })
-    .then(function(text) {
-      navigator.clipboard.writeText(text).then(function() {
-        flash('copy-confirm', '✓ Скопійовано!');
-      });
-    });
-}
-
-// Inline fallback Code.gs content for copy
-var CODE_GS_CONTENT = `// KEVIN 360 - Google Apps Script
-// Вставте цей код у Apps Script редактор
-// Детальний код: https://github.com/YOUR_REPO/blob/main/Code.gs
-// TODO: завантажте повний Code.gs з репозиторію`;
-
-// ── API HELPERS ───────────────────────────────────────────────
-function apiGet(action, params) {
-  var url = getScriptUrl() + '?action=' + action;
-  if (params) {
-    Object.keys(params).forEach(function(k) {
-      url += '&' + k + '=' + encodeURIComponent(params[k]);
-    });
-  }
-  return fetch(url).then(function(r) { return r.json(); });
-}
-
-function apiPost(data) {
-  return fetch(getScriptUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  }).then(function(r) { return r.json(); });
-}
-
-function getScriptUrl() {
-  return localStorage.getItem('kevin360_script_url') || SCRIPT_URL;
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function flash(id, msg) {
-  var el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.opacity = '1';
-  setTimeout(function() { el.style.opacity = '0'; }, 2500);
-}
-
-// Promise.finally polyfill
-if (!Promise.prototype.finally) {
-  Promise.prototype.finally = function(fn) {
-    return this.then(function(v) { fn(); return v; }, function(e) { fn(); throw e; });
+  let state = {
+    backendUrl:    localStorage.getItem(BACKEND_KEY) || '',
+    currentTab:    'settings',
+    configs:       [],
+    submissions:   [],
+    archive:       [],
+    archiveTarget: null   // { id, name } for archive confirm modal
   };
-}
+
+  // ─── INIT ────────────────────────────────────────────────
+  function init() {
+    // topbar date
+    document.getElementById('topbar-date').textContent =
+      new Date().toLocaleDateString('uk-UA', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Render saved URL
+    if (state.backendUrl) {
+      document.getElementById('backend-url-input').value = state.backendUrl;
+      renderUrlStatus(null); // unknown until tested
+    }
+  }
+
+  // ─── LOGIN / LOGOUT ───────────────────────────────────────
+  async function login() {
+    const pin = document.getElementById('pin-input').value;
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = '';
+
+    if (!pin) { errEl.textContent = 'Введіть PIN-код'; return; }
+    if (!state.backendUrl) {
+      // Allow login without backend URL (will setup in settings)
+      showApp();
+      return;
+    }
+
+    try {
+      const res = await apiPost({ action: 'checkPin', pin });
+      if (res.valid) { showApp(); }
+      else { errEl.textContent = 'Невірний PIN-код'; }
+    } catch (_) {
+      // If backend unavailable, still let admin in to set URL
+      showApp();
+    }
+  }
+
+  function showApp() {
+    document.getElementById('login-screen').style.display  = 'none';
+    document.getElementById('app-shell').style.display     = 'flex';
+    init();
+    switchTab('settings');
+  }
+
+  function logout() {
+    document.getElementById('app-shell').style.display    = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('pin-input').value = '';
+    document.getElementById('login-error').textContent = '';
+  }
+
+  // ─── TABS ─────────────────────────────────────────────────
+  function switchTab(tab) {
+    state.currentTab = tab;
+    document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.tab === tab);
+    });
+    document.getElementById('tab-' + tab).classList.add('active');
+    document.getElementById('topbar-title').textContent = TAB_TITLES[tab] || tab;
+
+    if (tab === 'configs') loadConfigs();
+    if (tab === 'results') loadResults();
+    if (tab === 'archive') loadArchive();
+  }
+
+  // ─── SETTINGS ────────────────────────────────────────────
+  async function saveBackendUrl() {
+    const url = document.getElementById('backend-url-input').value.trim();
+    const alertEl = document.getElementById('alert-url');
+
+    if (!url) { showAlert(alertEl, 'err', 'Введіть URL.'); return; }
+    if (!url.startsWith('https://script.google.com')) {
+      showAlert(alertEl, 'err', 'URL має починатися з https://script.google.com');
+      return;
+    }
+
+    // Save to localStorage immediately
+    localStorage.setItem(BACKEND_KEY, url);
+    state.backendUrl = url;
+
+    // Save to Sheets
+    try {
+      const res = await apiPost({ action: 'setBackendUrl', url });
+      if (res.error) throw new Error(res.error);
+      showAlert(alertEl, 'ok', 'URL збережено. Тепер форма оцінювання використовуватиме це посилання.');
+      renderUrlStatus(true);
+    } catch (err) {
+      showAlert(alertEl, 'ok', 'URL збережено локально. Перевірте з\'єднання кнопкою "Перевірити".');
+      renderUrlStatus(null);
+    }
+  }
+
+  async function testConnection() {
+    const url = document.getElementById('backend-url-input').value.trim();
+    const alertEl = document.getElementById('alert-url');
+    const btn = document.getElementById('btn-test');
+
+    if (!url) { showAlert(alertEl, 'err', 'Введіть URL перед перевіркою.'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Перевірка...';
+
+    try {
+      const tmpUrl = state.backendUrl;
+      state.backendUrl = url; // temp swap
+      const res = await apiGet('getSettings');
+      state.backendUrl = tmpUrl;
+
+      if (res.error) throw new Error(res.error);
+      showAlert(alertEl, 'ok', 'З\'єднання успішне! Бекенд відповідає коректно.');
+      renderUrlStatus(true);
+    } catch (err) {
+      renderUrlStatus(false);
+      showAlert(alertEl, 'err', 'Не вдалося підключитися. Перевірте URL та налаштування деплою (Execute as: Me, Access: Anyone).');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M1 6s0 0 0 0a15.3 15.3 0 0 1 22 0"/>
+        <path d="M5 10s0 0 0 0a10.2 10.2 0 0 1 14 0"/>
+        <path d="M8.5 14s0 0 0 0a5.1 5.1 0 0 1 7 0"/>
+        <line x1="12" y1="20" x2="12.01" y2="20"/>
+      </svg> Перевірити`;
+    }
+  }
+
+  function renderUrlStatus(ok) {
+    const el = document.getElementById('url-status-bar');
+    if (ok === true)  el.innerHTML = '<div class="url-status connected"><div class="dot"></div>З\'єднано</div>';
+    else if (ok === false) el.innerHTML = '<div class="url-status disconnected"><div class="dot"></div>Немає з\'єднання</div>';
+    else if (state.backendUrl) el.innerHTML = '<div class="url-status disconnected"><div class="dot"></div>URL збережено (не перевірено)</div>';
+    else el.innerHTML = '';
+  }
+
+  async function savePin() {
+    const pin = document.getElementById('new-pin').value.trim();
+    const alertEl = document.getElementById('alert-pin');
+    if (pin.length < 4) { showAlert(alertEl, 'err', 'PIN має містити мінімум 4 символи.'); return; }
+    try {
+      const res = await apiPost({ action: 'setPin', pin });
+      if (res.error) throw new Error(res.error);
+      document.getElementById('new-pin').value = '';
+      showAlert(alertEl, 'ok', 'PIN успішно змінено.');
+    } catch (err) {
+      showAlert(alertEl, 'err', err.message);
+    }
+  }
+
+  // ─── CONFIGS ──────────────────────────────────────────────
+  async function loadConfigs() {
+    const loading = document.getElementById('configs-loading');
+    const table   = document.getElementById('configs-table');
+    const empty   = document.getElementById('configs-empty');
+    const alertEl = document.getElementById('alert-configs');
+
+    loading.style.display = 'block';
+    table.style.display   = 'none';
+    empty.style.display   = 'none';
+    alertEl.className     = 'alert';
+
+    try {
+      const data = await apiGet('getConfigs');
+      if (data.error) throw new Error(data.error);
+      state.configs = data;
+
+      loading.style.display = 'none';
+
+      if (!data.length) { empty.style.display = 'block'; return; }
+
+      table.style.display = 'block';
+      const tbody = document.getElementById('configs-tbody');
+      tbody.innerHTML = data.map(cfg => {
+        const peerCount     = cfg.peer_count     || 2;
+        const totalRequired = cfg.total_required || (2 + peerCount);
+        return `
+          <tr>
+            <td><strong>${esc(cfg.name)}</strong></td>
+            <td class="cell-muted">${esc(cfg.role) || '&mdash;'}</td>
+            <td><span style="color:var(--accent);font-weight:700;">${peerCount}</span></td>
+            <td>
+              <span style="font-weight:700;">${totalRequired}</span>
+              <span class="cell-muted" style="font-size:11px;"> (self + manager + ${peerCount})</span>
+            </td>
+            <td style="text-align:right;">
+              <div style="display:flex;gap:6px;justify-content:flex-end;">
+                <button class="btn btn-ghost btn-sm" onclick="Admin.openConfigModal('${esc(cfg.id)}')">Редагувати</button>
+                <button class="btn btn-danger btn-sm" onclick="Admin.deleteConfig('${esc(cfg.id)}','${esc(cfg.name)}')">Видалити</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch (err) {
+      loading.style.display = 'none';
+      showAlert(alertEl, 'err', err.message);
+    }
+  }
+
+  function openConfigModal(id) {
+    const cfg     = id ? state.configs.find(c => c.id === id) : null;
+    const modal   = document.getElementById('config-modal');
+    const alertEl = document.getElementById('alert-modal');
+    alertEl.className = 'alert';
+
+    document.getElementById('modal-title').textContent   = cfg ? 'Редагувати конфігурацію' : 'Додати особу';
+    document.getElementById('modal-config-id').value     = cfg ? cfg.id : '';
+    document.getElementById('cfg-name').value            = cfg ? cfg.name : '';
+    document.getElementById('cfg-role').value            = cfg ? cfg.role : '';
+    document.getElementById('cfg-peer-count').value      = cfg ? (cfg.peer_count || 2) : 2;
+    updatePeerPreview();
+
+    modal.classList.add('open');
+  }
+
+  function closeConfigModal() {
+    document.getElementById('config-modal').classList.remove('open');
+  }
+
+  function updatePeerPreview() {
+    const n = Math.max(1, parseInt(document.getElementById('cfg-peer-count').value) || 2);
+    document.getElementById('modal-peer-preview').textContent  = n;
+    document.getElementById('modal-total-preview').textContent = 2 + n;
+  }
+
+  async function saveConfig() {
+    const alertEl  = document.getElementById('alert-modal');
+    alertEl.className = 'alert';
+
+    const id         = document.getElementById('modal-config-id').value;
+    const name       = document.getElementById('cfg-name').value.trim();
+    const role       = document.getElementById('cfg-role').value.trim();
+    const peer_count = Math.max(1, parseInt(document.getElementById('cfg-peer-count').value) || 2);
+
+    if (!name) { showAlert(alertEl, 'err', 'Введіть ПІБ співробітника.'); return; }
+
+    const btn = document.getElementById('modal-save-btn');
+    btn.disabled = true; btn.textContent = 'Збереження...';
+
+    try {
+      const res = await apiPost({ action: 'updateConfig', id: id || null, name, role, peer_count });
+      if (res.error) throw new Error(res.error);
+      closeConfigModal();
+      await loadConfigs();
+    } catch (err) {
+      showAlert(alertEl, 'err', err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Зберегти';
+    }
+  }
+
+  async function deleteConfig(id, name) {
+    if (!confirm(`Видалити конфігурацію "${name}"?\nВсі незбережені відповіді також буде видалено.`)) return;
+    try {
+      const res = await apiPost({ action: 'deleteConfig', id });
+      if (res.error) throw new Error(res.error);
+      await loadConfigs();
+    } catch (err) {
+      const alertEl = document.getElementById('alert-configs');
+      showAlert(alertEl, 'err', err.message);
+    }
+  }
+
+  // ─── RESULTS ──────────────────────────────────────────────
+  async function loadResults() {
+    const loading = document.getElementById('results-loading');
+    const table   = document.getElementById('results-table');
+    const empty   = document.getElementById('results-empty');
+    const statsEl = document.getElementById('results-stats');
+    const alertEl = document.getElementById('alert-results');
+
+    loading.style.display = 'block';
+    table.style.display   = 'none';
+    empty.style.display   = 'none';
+    statsEl.innerHTML     = '';
+    alertEl.className     = 'alert';
+
+    try {
+      const data = await apiGet('getSubmissions');
+      if (data.error) throw new Error(data.error);
+      state.submissions = data;
+
+      loading.style.display = 'none';
+
+      // Stats
+      const total    = data.length;
+      const complete = data.filter(d => d.status === 'complete').length;
+      const inprog   = total - complete;
+      const scored   = data.filter(d => d.avg_score !== null);
+      const avg      = scored.length
+        ? Math.round(scored.reduce((s, d) => s + d.avg_score, 0) / scored.length)
+        : null;
+
+      statsEl.innerHTML = `
+        <div class="stat-card accent">
+          <div class="stat-num">${total}</div>
+          <div class="stat-label">Всього осіб</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-num">${complete}</div>
+          <div class="stat-label">Завершено</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--warn)">${inprog}</div>
+          <div class="stat-label">В процесі</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" style="color:var(--text)">${avg !== null ? avg + '%' : '—'}</div>
+          <div class="stat-label">Середній бал</div>
+        </div>`;
+
+      if (!data.length) { empty.style.display = 'block'; return; }
+
+      table.style.display = 'block';
+      const tbody = document.getElementById('results-tbody');
+      tbody.innerHTML = data.map(d => {
+        // Progress pills: show counts for peers, ✓/✗ for self & manager
+        const selfDone    = (d.progress.self    || 0) >= 1;
+        const managerDone = (d.progress.manager || 0) >= 1;
+        const peerDone    = (d.progress.peer    || 0);
+        const peerNeeded  = d.peer_count || 2;
+
+        const pills = `
+          <div class="role-pill ${selfDone    ? 'done' : ''}"><div class="dot"></div>Самооцінка</div>
+          <div class="role-pill ${managerDone ? 'done' : ''}"><div class="dot"></div>Керівник</div>
+          <div class="role-pill ${peerDone >= peerNeeded ? 'done' : ''}">
+            <div class="dot"></div>Колеги ${peerDone}/${peerNeeded}
+          </div>`;
+
+        const badge = d.status === 'complete'
+          ? '<span class="badge badge-ok">Завершено</span>'
+          : `<span class="badge badge-warn">${d.submitted_count || 0}/${d.total_required || '?'}</span>`;
+
+        // Score: ТІЛЬКИ після complete
+        const scoreCell = d.status === 'complete' && d.avg_score !== null
+          ? `<strong style="color:var(--accent)">${d.avg_score}%</strong>`
+          : '<span class="cell-muted" title="Буде розраховано після збору всіх оцінок">—</span>';
+
+        const canArchive = d.status === 'complete';
+        return `
+          <tr>
+            <td><strong>${esc(d.name)}</strong></td>
+            <td class="cell-muted">${esc(d.role) || '—'}</td>
+            <td><div class="role-pills">${pills}</div></td>
+            <td>${badge}</td>
+            <td>${scoreCell}</td>
+            <td style="text-align:right;">
+              <button class="btn btn-ghost btn-sm"
+                ${!canArchive ? 'disabled title="Доступно лише після завершення всіх оцінок"' : ''}
+                onclick="Admin.openArchiveModal('${esc(d.evaluated_id)}','${esc(d.name)}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/>
+                  <line x1="10" y1="12" x2="14" y2="12"/>
+                </svg>
+                Архівувати
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    } catch (err) {
+      loading.style.display = 'none';
+      showAlert(alertEl, 'err', err.message);
+    }
+  }
+
+  // ─── ARCHIVE MODAL ────────────────────────────────────────
+  function openArchiveModal(id, name) {
+    state.archiveTarget = { id, name };
+    document.getElementById('archive-person-name').textContent = name;
+    document.getElementById('alert-archive-modal').className   = 'alert';
+    document.getElementById('archive-modal').classList.add('open');
+  }
+
+  function closeArchiveModal() {
+    document.getElementById('archive-modal').classList.remove('open');
+    state.archiveTarget = null;
+  }
+
+  async function confirmArchive() {
+    if (!state.archiveTarget) return;
+    const btn     = document.getElementById('archive-confirm-btn');
+    const alertEl = document.getElementById('alert-archive-modal');
+    btn.disabled  = true; btn.textContent = 'Архівування...';
+
+    try {
+      const res = await apiPost({ action: 'archiveUser', evaluated_id: state.archiveTarget.id });
+      if (res.error) throw new Error(res.error);
+      closeArchiveModal();
+      await loadResults();
+    } catch (err) {
+      showAlert(alertEl, 'err', err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Архівувати';
+    }
+  }
+
+  // ─── ARCHIVE TAB ──────────────────────────────────────────
+  async function loadArchive() {
+    const loading = document.getElementById('archive-loading');
+    const table   = document.getElementById('archive-table');
+    const empty   = document.getElementById('archive-empty');
+    const alertEl = document.getElementById('alert-archive');
+
+    loading.style.display = 'block';
+    table.style.display   = 'none';
+    empty.style.display   = 'none';
+    alertEl.className     = 'alert';
+
+    try {
+      const data = await apiGet('getArchive');
+      if (data.error) throw new Error(data.error);
+      state.archive = data;
+      loading.style.display = 'none';
+      renderArchiveTable(data);
+    } catch (err) {
+      loading.style.display = 'none';
+      showAlert(alertEl, 'err', err.message);
+    }
+  }
+
+  function renderArchiveTable(data) {
+    const table = document.getElementById('archive-table');
+    const empty = document.getElementById('archive-empty');
+
+    if (!data.length) { empty.style.display = 'block'; table.style.display = 'none'; return; }
+
+    table.style.display = 'block'; empty.style.display = 'none';
+    const tbody = document.getElementById('archive-tbody');
+    tbody.innerHTML = data.map(r => {
+      const ts   = r.timestamp ? new Date(r.timestamp).toLocaleDateString('uk-UA', {
+        day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'
+      }) : '—';
+      const name = state.configs.find(c => c.id === r.evaluated_id)?.name || r.evaluated_id;
+      const score = r.score ? `<strong style="color:var(--accent)">${r.score}%</strong>` : '—';
+      return `
+        <tr>
+          <td class="cell-muted" style="white-space:nowrap;">${esc(ts)}</td>
+          <td><strong>${esc(name)}</strong></td>
+          <td>${esc(r.evaluator_name)}</td>
+          <td><span class="badge badge-info">${esc(ROLES_UA[r.role] || r.role)}</span></td>
+          <td>${score}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function filterArchive() {
+    const q = document.getElementById('archive-search').value.toLowerCase().trim();
+    if (!q) { renderArchiveTable(state.archive); return; }
+    const filtered = state.archive.filter(r => {
+      const name = (state.configs.find(c => c.id === r.evaluated_id)?.name || r.evaluated_id).toLowerCase();
+      return name.includes(q) ||
+        r.evaluator_name.toLowerCase().includes(q) ||
+        (ROLES_UA[r.role] || r.role).toLowerCase().includes(q);
+    });
+    renderArchiveTable(filtered);
+  }
+
+  // ─── API ──────────────────────────────────────────────────
+  function requireUrl() {
+    if (!state.backendUrl) throw new Error('Backend URL не налаштований. Перейдіть у Налаштування та збережіть URL.');
+  }
+
+  async function apiGet(action) {
+    requireUrl();
+    const res = await fetch(`${state.backendUrl}?action=${action}`, { redirect: 'follow' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return res.json();
+  }
+
+  async function apiPost(body) {
+    requireUrl();
+    const res = await fetch(state.backendUrl, {
+      method:   'POST',
+      redirect: 'follow',
+      headers:  { 'Content-Type': 'text/plain' },
+      body:     JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    return res.json();
+  }
+
+  // ─── UTILS ───────────────────────────────────────────────
+  function showAlert(el, type, msg) {
+    el.textContent = msg;
+    el.className   = 'alert show-' + type;
+    setTimeout(() => { if (el.textContent === msg) el.className = 'alert'; }, 6000);
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  return {
+    login, logout, switchTab,
+    saveBackendUrl, testConnection, savePin,
+    loadConfigs, openConfigModal, closeConfigModal, updatePeerPreview, saveConfig, deleteConfig,
+    loadResults, openArchiveModal, closeArchiveModal, confirmArchive,
+    loadArchive, filterArchive
+  };
+})();
+
+// Boot
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('pin-input').focus();
+
+  // If no backend URL — auto-show app in "setup" mode with settings tab
+  // User still needs to enter PIN if backend is available
+});
 </script>
 </body>
 </html>
