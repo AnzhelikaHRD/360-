@@ -653,22 +653,30 @@ const App = (() => {
     if (!state.backendUrl) { showStep('no-url'); return; }
 
     try {
-      // Fetch configs, questions і submissions паралельно
-      const [configs, questions, submissions] = await Promise.all([
+      // Fetch configs, questions, submissions і archive паралельно
+      const [configs, questions, submissions, archive] = await Promise.all([
         apiGet('getConfigs'),
         apiGet('getQuestions'),
-        apiGet('getSubmissions')
+        apiGet('getSubmissions'),
+        apiGet('getArchive')
       ]);
-      if (configs.error)     throw new Error(configs.error);
-      if (questions.error)   throw new Error(questions.error);
+      if (configs.error)   throw new Error(configs.error);
+      if (questions.error) throw new Error(questions.error);
 
-      // Правка 1: показуємо лише активних (не complete) співробітників
+      // Приховуємо співробітників які:
+      // 1. мають status=complete в активних submissions
+      // 2. вже заархівовані (є записи в Archive)
       const completedIds = new Set(
         (Array.isArray(submissions) ? submissions : [])
           .filter(s => s.status === 'complete')
           .map(s => s.evaluated_id)
       );
-      state.configs      = configs.filter(c => !completedIds.has(c.id));
+      const archivedIds = new Set(
+        (Array.isArray(archive) ? archive : [])
+          .map(a => a.evaluated_id)
+      );
+      const hiddenIds = new Set([...completedIds, ...archivedIds]);
+      state.configs      = configs.filter(c => !hiddenIds.has(c.id));
       state.questionSets = questions;
 
       renderPersonGrid();
