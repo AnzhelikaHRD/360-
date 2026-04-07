@@ -749,13 +749,23 @@
             <h2>Результати</h2>
             <p>Прогрес оцінювань та підсумкові бали</p>
           </div>
-          <button class="btn btn-ghost" onclick="Admin.loadResults()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <polyline points="23 4 23 10 17 10"/>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-            </svg>
-            Оновити
-          </button>
+          <div style="display:flex;gap:8px;">
+            <button id="export-all-btn" class="btn btn-ghost" onclick="Admin.exportAllCSV()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Експорт CSV
+            </button>
+            <button class="btn btn-ghost" onclick="Admin.loadResults()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              Оновити
+            </button>
+          </div>
         </div>
 
         <div id="results-stats" class="stats-row"></div>
@@ -945,11 +955,21 @@
         <div class="modal-title" id="detail-modal-title">Відповіді оцінювачів</div>
         <div id="detail-modal-sub" style="font-size:12px;color:var(--muted);margin-top:3px;"></div>
       </div>
-      <button class="modal-close" onclick="Admin.closeDetailModal()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="export-detail-btn" class="btn btn-ghost btn-sm" onclick="Admin.exportDetailCSV()" style="white-space:nowrap;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Завантажити CSV
+        </button>
+        <button class="modal-close" onclick="Admin.closeDetailModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div id="detail-modal-body">
@@ -976,7 +996,9 @@ const Admin = (() => {
     configs:       [],
     submissions:   [],
     archive:       [],
-    archiveTarget: null   // { id, name } for archive confirm modal
+    archiveTarget: null,   // { id, name } for archive confirm modal
+    detailId:      null,   // id currently open in detail modal
+    detailName:    null    // name currently open in detail modal
   };
 
   // ─── INIT ────────────────────────────────────────────────
@@ -1503,10 +1525,14 @@ const Admin = (() => {
   // ─── DETAIL MODAL (перегляд відповідей) ──────────────────
 
   async function openDetailModal(id, name, role) {
+    state.detailId   = id;
+    state.detailName = name;
     const modal = document.getElementById('detail-modal');
     const body  = document.getElementById('detail-modal-body');
+    const exportBtn = document.getElementById('export-detail-btn');
     document.getElementById('detail-modal-title').textContent = name;
     document.getElementById('detail-modal-sub').textContent   = role || '';
+    if (exportBtn) { exportBtn.disabled = true; exportBtn.textContent = 'Завантажити CSV'; }
     body.innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);">
       <div class="spinner" style="margin:0 auto 12px;width:24px;height:24px;border-width:2.5px;"></div>Завантаження...</div>`;
     modal.classList.add('open');
@@ -1515,6 +1541,7 @@ const Admin = (() => {
       const data = await apiGet(`getSubmissionDetails&id=${encodeURIComponent(id)}`);
       if (data.error) throw new Error(data.error);
       body.innerHTML = renderDetailBody(data);
+      if (exportBtn) { exportBtn.disabled = false; }
     } catch (err) {
       body.innerHTML = `<div style="padding:24px;color:var(--err);">Помилка: ${esc(err.message)}</div>`;
     }
@@ -1522,6 +1549,115 @@ const Admin = (() => {
 
   function closeDetailModal() {
     document.getElementById('detail-modal').classList.remove('open');
+    state.detailId   = null;
+    state.detailName = null;
+  }
+
+  // ─── CSV EXPORT ───────────────────────────────────────────
+
+  // Будує масив рядків CSV для одного співробітника
+  function buildDetailRows(data, includeHeader) {
+    const ROLE_UA = { self: 'Самооцінка', manager: 'Керівник', peer: 'Колега' };
+    const TYPE_UA = { rating: 'Рейтинг', choice: 'Вибір', open: 'Відкрите' };
+    const qs   = data.question_sets || {};
+    const subs = data.submissions   || [];
+    const rows = [];
+    if (includeHeader) {
+      rows.push(['Співробітник', 'Посада', 'Роль оцінювача', "Ім'я оцінювача", 'Дата',
+                 '№', 'Питання', 'Тип', 'Відповідь', 'Бал (%)']);
+    }
+    const ROLES_ORDER = ['self', 'manager', 'peer'];
+    ROLES_ORDER.forEach(role => {
+      subs.filter(s => s.role === role).forEach(sub => {
+        const questions  = qs[role] || [];
+        const answersMap = {};
+        (sub.answers || []).forEach(a => { answersMap[a.qid] = a.value; });
+        const ts = sub.timestamp
+          ? new Date(sub.timestamp).toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' })
+          : '';
+        questions.forEach((q, i) => {
+          const val = answersMap[q.id];
+          rows.push([
+            data.name        || '',
+            data.role        || '',
+            ROLE_UA[role]    || role,
+            sub.evaluator_name || '',
+            ts,
+            i + 1,
+            q.text,
+            TYPE_UA[q.type]  || q.type,
+            val !== undefined && val !== null ? String(val) : '',
+            i === 0 ? (sub.score || '') : '' // бал виводимо лише в першому рядку сабмішену
+          ]);
+        });
+      });
+    });
+    return rows;
+  }
+
+  // Завантажує CSV для поточного відкритого співробітника (кнопка в модалці)
+  async function exportDetailCSV() {
+    if (!state.detailId) return;
+    const btn = document.getElementById('export-detail-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Завантаження...'; }
+    try {
+      const data = await apiGet(`getSubmissionDetails&id=${encodeURIComponent(state.detailId)}`);
+      if (data.error) throw new Error(data.error);
+      const rows = buildDetailRows(data, true);
+      downloadCSV(rows, `${state.detailName || state.detailId}_360.csv`);
+    } catch (err) {
+      alert('Помилка експорту: ' + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Завантажити CSV'; }
+    }
+  }
+
+  // Завантажує CSV для всіх співробітників у Результатах (кнопка над таблицею)
+  async function exportAllCSV() {
+    const btn = document.getElementById('export-all-btn');
+    if (!state.submissions || !state.submissions.length) {
+      alert('Немає даних для експорту. Спочатку завантажте Результати.');
+      return;
+    }
+    if (btn) { btn.disabled = true; btn.textContent = 'Завантаження...'; }
+    try {
+      const allData = await Promise.all(
+        state.submissions.map(s => apiGet(`getSubmissionDetails&id=${encodeURIComponent(s.evaluated_id)}`))
+      );
+      const header = ['Співробітник', 'Посада', 'Роль оцінювача', "Ім'я оцінювача", 'Дата',
+                      '№', 'Питання', 'Тип', 'Відповідь', 'Бал (%)'];
+      const rows = [header];
+      allData.forEach(data => {
+        if (!data.error) buildDetailRows(data, false).forEach(r => rows.push(r));
+      });
+      const today = new Date().toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\./g, '-');
+      downloadCSV(rows, `360_всі_результати_${today}.csv`);
+    } catch (err) {
+      alert('Помилка експорту: ' + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Експорт CSV'; }
+    }
+  }
+
+  // Генерує та завантажує CSV-файл
+  function downloadCSV(rows, filename) {
+    const BOM = '\uFEFF'; // UTF-8 BOM — щоб кирилиця коректно відкривалась в Excel
+    const csv = BOM + rows.map(row =>
+      row.map(cell => {
+        const s = String(cell ?? '');
+        return (s.includes(',') || s.includes('"') || s.includes('\n'))
+          ? `"${s.replace(/"/g, '""')}"` : s;
+      }).join(',')
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function renderDetailBody(data) {
@@ -1650,7 +1786,7 @@ const Admin = (() => {
     saveBackendUrl, testConnection, savePin, copyShareLink,
     loadConfigs, openConfigModal, closeConfigModal, updatePeerPreview, saveConfig, deleteConfig,
     loadResults, openArchiveModal, closeArchiveModal, confirmArchive,
-    openDetailModal, closeDetailModal,
+    openDetailModal, closeDetailModal, exportDetailCSV, exportAllCSV,
     loadArchive, filterArchive
   };
 })();
