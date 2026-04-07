@@ -1298,17 +1298,26 @@ const Admin = (() => {
     alertEl.className     = 'alert';
 
     try {
-      const data = await apiGet('getSubmissions');
+      const [data, archiveData] = await Promise.all([
+        apiGet('getSubmissions'),
+        apiGet('getArchive')
+      ]);
       if (data.error) throw new Error(data.error);
-      state.submissions = data;
+
+      // Фільтруємо тих, хто вже є в архіві — вони мають бути лише там
+      const archivedIds = new Set(
+        (Array.isArray(archiveData) ? archiveData : []).map(a => a.evaluated_id)
+      );
+      const filtered = data.filter(d => !archivedIds.has(d.evaluated_id));
+      state.submissions = filtered;
 
       loading.style.display = 'none';
 
-      // Stats
-      const total    = data.length;
-      const complete = data.filter(d => d.status === 'complete').length;
+      // Stats (рахуємо лише активних, без заархівованих)
+      const total    = filtered.length;
+      const complete = filtered.filter(d => d.status === 'complete').length;
       const inprog   = total - complete;
-      const scored   = data.filter(d => d.avg_score !== null);
+      const scored   = filtered.filter(d => d.avg_score !== null);
       const avg      = scored.length
         ? Math.round(scored.reduce((s, d) => s + d.avg_score, 0) / scored.length)
         : null;
@@ -1331,11 +1340,11 @@ const Admin = (() => {
           <div class="stat-label">Середній бал</div>
         </div>`;
 
-      if (!data.length) { empty.style.display = 'block'; return; }
+      if (!filtered.length) { empty.style.display = 'block'; return; }
 
       table.style.display = 'block';
       const tbody = document.getElementById('results-tbody');
-      tbody.innerHTML = data.map(d => {
+      tbody.innerHTML = filtered.map(d => {
         // Progress pills: show counts for peers, ✓/✗ for self & manager
         const selfDone    = (d.progress.self    || 0) >= 1;
         const managerDone = (d.progress.manager || 0) >= 1;
