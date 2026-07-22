@@ -490,8 +490,11 @@
     .rating-bar-fill  { height: 100%; border-radius: 99px; transition: width 0.4s; }
 
     /* ВП бейдж */
-    .badge-vp-ok  { background: var(--ok-bg);  color: var(--ok);  border: 1px solid var(--ok-border); }
-    .badge-vp-err { background: var(--err-bg); color: var(--err); border: 1px solid var(--err-border); }
+    .badge-vp-ok       { background: var(--ok-bg);   color: var(--ok);   border: 1px solid var(--ok-border); }
+    .badge-vp-err      { background: var(--err-bg);  color: var(--err);  border: 1px solid var(--err-border); }
+    .badge-vp-extend   { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(210,153,34,0.35); }
+    .badge-vp-pending  { background: var(--card);    color: var(--muted); border: 1px solid var(--border); }
+    .badge-gap         { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(210,153,34,0.35); }
 
     /* Score ring */
     .score-ring {
@@ -1384,14 +1387,34 @@ const Admin = (() => {
           ? '<span class="badge badge-ok">Завершено</span>'
           : `<span class="badge badge-warn">${d.submitted_count || 0}/${d.total_required || '?'}</span>`;
 
-        // Score + ВП статус: ТІЛЬКИ після complete
+        // Score — довідково (зважений avg); ВП-статус — за вердиктом керівника (m8), не за балом.
         let scoreCell = '<span class="cell-muted" title="Буде розраховано після збору всіх оцінок">—</span>';
-        let vpBadge   = '';
         if (d.status === 'complete' && d.avg_score !== null) {
-          scoreCell = `<strong style="color:var(--accent)">${d.avg_score}%</strong>`;
-          vpBadge   = d.avg_score >= 65
-            ? '<span class="badge badge-vp-ok" style="margin-left:6px;">Пройдений ВП</span>'
-            : '<span class="badge badge-vp-err" style="margin-left:6px;">Не пройдений ВП</span>';
+          const rs = d.role_scores || {};
+          const tooltip = `Зважений бал: керівник ${rs.manager ?? '—'}% × 50%, колеги ${rs.peer ?? '—'}% × 40%, самооцінка ${rs.self ?? '—'}% × 10%`;
+          scoreCell = `<strong style="color:var(--accent)" title="${esc(tooltip)}">${d.avg_score}%</strong>`;
+        }
+
+        // ВП-плашка: hard override за вердиктом керівника
+        let vpBadge = '';
+        switch (d.vp_status) {
+          case 'passed':
+            vpBadge = '<span class="badge badge-vp-ok" style="margin-left:6px;" title="Керівник: Продовжити">Пройдений ВП</span>';
+            break;
+          case 'not_passed':
+            vpBadge = '<span class="badge badge-vp-err" style="margin-left:6px;" title="Керівник: Не продовжувати">Не пройдений ВП</span>';
+            break;
+          case 'extended':
+            vpBadge = '<span class="badge badge-vp-extend" style="margin-left:6px;" title="Керівник: Потребує додаткового місяця">+1 місяць ВП</span>';
+            break;
+          default:
+            vpBadge = '<span class="badge badge-vp-pending" style="margin-left:6px;">Очікує вердикту</span>';
+        }
+
+        // Alert: великий розрив між керівником і колегами (>25 п.п.)
+        let gapBadge = '';
+        if (d.score_gap !== null && d.score_gap !== undefined && d.score_gap > 25) {
+          gapBadge = `<span class="badge badge-gap" style="margin-left:6px;" title="Розрив між керівником і колегами ${d.score_gap} п.п. — варто обговорити">⚠ розрив ${d.score_gap} п.п.</span>`;
         }
 
         const canArchive = d.status === 'complete';
@@ -1401,7 +1424,7 @@ const Admin = (() => {
             <td class="cell-muted">${esc(d.role) || '—'}</td>
             <td><div class="role-pills">${pills}</div></td>
             <td>${badge}</td>
-            <td><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">${scoreCell}${vpBadge}</div></td>
+            <td><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">${scoreCell}${vpBadge}${gapBadge}</div></td>
             <td style="text-align:right;">
               <div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;">
                 <button class="btn btn-ghost btn-sm"
